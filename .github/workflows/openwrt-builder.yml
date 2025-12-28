@@ -34,7 +34,7 @@ jobs:
         sudo -E rm -rf /usr/share/dotnet /etc/mysql /etc/php /usr/local/lib/android
         sudo docker image prune --all --force
         sudo -E apt-get -qq update
-        sudo -E apt-get -qq install ack build-essential clang flex bison g++ gawk \
+        sudo -E apt-get -qq install build-essential clang flex bison g++ gawk \
             bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk gettext gcc-multilib \
             gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev \
             libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses-dev libpython3-dev \

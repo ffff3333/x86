@@ -25,8 +25,8 @@
 
 # Add a feed source
 #sed -i '1i src-git immortalwrt_packages https://github.com/immortalwrt/packages' feeds.conf.default
-sed -i '1i src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages' feeds.conf.default
-sed -i '2i src-git passwall_luci https://github.com/Openwrt-Passwall/openwrt-passwall' feeds.conf.default
+#sed -i '1i src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages' feeds.conf.default
+#sed -i '2i src-git passwall_luci https://github.com/Openwrt-Passwall/openwrt-passwall' feeds.conf.default
 #sed -i '1i src-git flrz https://github.com/flrz/passwall_packages' feeds.conf.default
 #sed -i '1i src-git passwall_packages https://github.com/ffff3333/openwrt-passwall-packages' feeds.conf.default
 #sed -i '1i src-git passwall-packages https://github.com/xiaorouji/openwrt-passwall-packages' feeds.conf.default
@@ -36,4 +36,5 @@ sed -i '3i src-git openclash https://github.com/vernesong/OpenClash' feeds.conf.
 #sed -i '1i src-git small https://github.com/kenzok8/small' feeds.conf.default
 #sed -i '2i src-git kenzo https://github.com/kenzok8/openwrt-packages' feeds.conf.default
 sed -i '4i src-git flrz https://github.com/flrz/openwrt-packages' feeds.conf.default
-sed -i '5i src-git immortalwrt_packages https://github.com/immortalwrt/packages' feeds.conf.default
+#sed -i '5i src-git immortalwrt_packages https://github.com/immortalwrt/packages' feeds.conf.default
+sed -i '5i src-git lang https://github.com/flrz/lang' feeds.conf.default

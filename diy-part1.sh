@@ -35,7 +35,7 @@ sed -i '3i src-git openclash https://github.com/vernesong/OpenClash' feeds.conf.
 #sed -i '4i src-git argon https://github.com/ffff3333/themes' feeds.conf.default
 #sed -i '1i src-git small https://github.com/kenzok8/small' feeds.conf.default
 #sed -i '2i src-git kenzo https://github.com/kenzok8/openwrt-packages' feeds.conf.default
-sed -i '4i src-git flrz https://github.com/flrz/openwrt-packages' feeds.conf.default
+#sed -i '4i src-git flrz https://github.com/flrz/openwrt-packages' feeds.conf.default
 #sed -i '5i src-git immortalwrt_packages https://github.com/immortalwrt/packages' feeds.conf.default
 #sed -i '5i src-git lang https://github.com/flrz/lang' feeds.conf.default
 #sed -i '6i src-git openwrt-passwall-packages https://github.com/ffff3333/openwrt-passwall-packages' feeds.conf.default

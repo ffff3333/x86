@@ -29,7 +29,7 @@
 #sed -i '1i src-git passwall_packages https://sourceforge.net/projects/openwrt-passwall-build/files/releases/packages-24.10/x86_64/passwall_packages/' feeds.conf.default
 #sed -i '2i src-git passwall_luci https://sourceforge.net/projects/openwrt-passwall-build/files/releases/packages-24.10/x86_64/passwall_luci/' feeds.conf.default
 #sed -i '1i src-git flrz https://github.com/flrz/passwall_packages' feeds.conf.default
-#sed -i '2i src-git passwall https://github.com/xiaorouji/openwrt-passwall' feeds.conf.default
+sed -i '2i src-git passwall https://github.com/moetayuko/openwrt-passwall-build' feeds.conf.default
 sed -i '3i src-git openclash https://github.com/vernesong/OpenClash' feeds.conf.default
 #sed -i '1i src-git small https://github.com/kenzok8/small' feeds.conf.default
 #sed -i '2i src-git kenzo https://github.com/kenzok8/openwrt-packages' feeds.conf.default

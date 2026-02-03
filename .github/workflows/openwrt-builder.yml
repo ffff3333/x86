@@ -1,7 +1,7 @@
 #
 # Openwrt with passwall and openclash
 
-name: Openwrt Builder_25.12
+name: Openwrt Builder
 
 on:
   repository_dispatch:
@@ -21,7 +21,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout
@@ -47,7 +47,6 @@ jobs:
         sudo -E timedatectl set-timezone "Asia/Shanghai"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
-        
     - name: Clone source code
       working-directory: /workdir
       run: |
@@ -61,21 +60,17 @@ jobs:
         chmod +x $DIY_P1_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
-        
     - name: Update feeds
       run: |
         cd openwrt
-        ./scripts/feeds update -a
-        
+        ./scripts/feeds update 
     - name: Install feeds
       run: |
         cd openwrt
         ./scripts/feeds install -a
-
-        #--------------------------------------begin_patches------------------------------------------
-        echo "Start applying the patch"
-
-
+    - name: Applying the patch
+      run: |
+        cd openwrt
         rm -rf temp_resp
         git clone -b master --single-branch https://github.com/openwrt/packages.git temp_resp
         echo "update golang version"
@@ -85,28 +80,13 @@ jobs:
         rm -rf feeds/packages/lang/rust
         cp -r temp_resp/lang/rust feeds/packages/lang
         rm -rf temp_resp
-
         git clone -b main --single-branch https://github.com/openwrt/openwrt.git temp_resp
         cp -f temp_resp/scripts/patch-kernel.sh scripts/
         rm -rf temp_resp
-
         echo "fixed rust host build error"
         sed -i 's/--set=llvm\.download-ci-llvm=false/--set=llvm.download-ci-llvm=true/' feeds/packages/lang/rust/Makefile
         grep -q -- '--ci false \\' feeds/packages/lang/rust/Makefile || sed -i '/x\.py \\/a \        --ci false \\' feeds/packages/lang/rust/Makefile
-
-        ./scripts/feeds update -a
-        ./scripts/feeds install -a
-
-        echo "Patch application completed"
-        #--------------------------------------end_patches--------------------------------------------
-
-        echo "CONFIG_ALL_NONSHARED=n" > .config
-        echo "CONFIG_ALL_KMODS=n" >> .config
-        echo "CONFIG_ALL=n" >> .config
-        echo "CONFIG_AUTOREMOVE=n" >> .config
-        echo "CONFIG_SIGNED_PACKAGES=n" >> .config
-        make defconfig
-            
+          
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files

@@ -27,12 +27,12 @@
 # Add a feed source
 #sed -i '1i src-git immortalwrt_packages https://github.com/immortalwrt/packages' feeds.conf.default
 #sed -i '1i src-git passwall_packages https://sourceforge.net/projects/openwrt-passwall-build/files/releases/packages-24.10/x86_64/passwall_packages/' feeds.conf.default
-sed -i '2i src-git passwall_luci src-git passwall_luci https://github.com/Openwrt-Passwall/openwrt-passwall.git' feeds.conf.default
+sed -i '2i src-git immortalwrt_luci https://github.com/immortalwrt/luci/tree/master/applications' feeds.conf.default
 #sed -i '1i src-git flrz https://github.com/flrz/passwall_packages' feeds.conf.default
-sed -i '3i src-git openclash https://github.com/vernesong/OpenClash' feeds.conf.default
+#-i '3i src-git openclash https://github.com/vernesong/OpenClash' feeds.conf.default
 #sed -i '1i src-git small https://github.com/kenzok8/small' feeds.conf.default
 #sed -i '2i src-git kenzo https://github.com/kenzok8/openwrt-packages' feeds.conf.default
-sed -i '4i src-git flrz https://github.com/flrz/openwrt-packages' feeds.conf.default
+#sed -i '4i src-git flrz https://github.com/flrz/openwrt-packages' feeds.conf.default
 #sed -i '5i src-git golang https://github.com/sbwml/packages_lang_golang -b 26.x feeds/packages/lang/golang' feeds.conf.default
 #sed -i '5i src-git lang https://github.com/flrz/lang' feeds.conf.default
 #sed -i '6i src-git openwrt-passwall-packages https://github.com/ffff3333/openwrt-passwall-packages' feeds.conf.default

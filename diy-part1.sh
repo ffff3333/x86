@@ -25,7 +25,8 @@
 
 
 # Add a feed source
-sed -i '1i src-git golang https://github.com/sbwml/packages_lang_golang -b 26.x feeds/packages/lang/golang' feeds.conf.default
+#sed -i '1i src-git golang https://github.com/sbwml/packages_lang_golang -b 26.x feeds/packages/lang/golang' feeds.conf.default
+sed -i 's/src-git packages https:\/\/github.com\/openwrt\/packages.git/src-git packages https:\/\/github.com\/immortalwrt\/packages.git/g' feeds.conf.default
 #sed -i '1i src-git passwall_packages https://github.com/flrz/passwall-packages' feeds.conf.default
 #sed -i '2i src-git passwall_luci https://github.com/Openwrt-Passwall/openwrt-passwall' feeds.conf.default
 #sed -i '1i src-git flrz https://github.com/flrz/passwall_packages' feeds.conf.default

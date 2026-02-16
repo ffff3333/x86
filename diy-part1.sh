@@ -22,7 +22,7 @@
 #sed -i 's/--set=llvm\.download-ci-llvm=true/--set=llvm.download-ci-llvm=false/' feeds/packages/lang/rust/Makefile
 #rm -rf feeds/packages/lang/golang
 #git clone https://github.com/sbwml/packages_lang_golang -b 26.x feeds/packages/lang/golang
-
+sed -i 's/src-git packages https:\/\/github.com\/openwrt\/packages.git/src-git packages https:\/\/github.com\/immortalwrt\/packages.git/g' feeds.conf.default
 
 # Add a feed source
 #sed -i '1i src-git golang https://github.com/sbwml/packages_lang_golang -b 26.x feeds/packages/lang/golang' feeds.conf.default

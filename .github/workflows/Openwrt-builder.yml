@@ -79,15 +79,6 @@ jobs:
         #haskell: true
         #large-packages: true
         #swap-storage: true
-
-    - name: Install LLVM (Official Script)
-      run: |
-        # 下载官方安装脚本并赋予权限
-        wget https://apt.llvm.org/llvm.sh
-        chmod +x llvm.sh
-        # 安装指定版本（例如 18），sudo 执行
-        sudo ./llvm.sh 18
-        # 将 llvm-config 等工具链接到系统路径（可选）
        
     - name: Setup Go
       uses: [actions/setup-go@v5](

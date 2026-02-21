@@ -66,19 +66,32 @@ jobs:
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
 
-    - name: Free Disk Space (Ubuntu)
-      uses: jlumbroso/free-disk-space@main
-      with:
+    #- name: Free Disk Space (Ubuntu)
+      #uses: jlumbroso/free-disk-space@main
+      #with:
         # this might remove tools that are actually needed,
         # if set to "true" but frees about 6 GB
-        tool-cache: true
+        #tool-cache: true
         # all of these default to true, but feel free to set to
         # "false" if necessary for your workflow
-        android: true
-        dotnet: true
-        haskell: true
-        large-packages: true
-        swap-storage: true
+        #android: true
+        #dotnet: true
+        #haskell: true
+        #large-packages: true
+        #swap-storage: true
+
+    - name: Install LLVM (Official Script)
+      run: |
+        # 下载官方安装脚本并赋予权限
+        wget https://apt.llvm.org/llvm.sh
+        chmod +x llvm.sh
+        # 安装指定版本（例如 18），sudo 执行
+        sudo ./llvm.sh 18
+        # 将 llvm-config 等工具链接到系统路径（可选）
+        echo "LLVM_PATH=$(llvm-config-18 --prefix)" >> $GITHUB_ENV
+
+    - name: Setup Go
+      uses: [actions/setup-go@v5](
         
     - name: Update feeds
       run: |
@@ -88,12 +101,12 @@ jobs:
     - name: Install feeds
       run: |
         cd openwrt
-        ./scripts/feeds install -a
+        ./scripts/feeds install -a 
 
         #替换golang
-        rm -rf feeds/packages/lang/golang
+        #rm -rf feeds/packages/lang/golang
         #git clone https://github.com/immortalwrt/packages.git /tmp/immortalwrt_pkg
-        git clone https://github.com/sbwml/packages_lang_golang -b 26.x feeds/packages/lang/golang
+        #git clone https://github.com/sbwml/packages_lang_golang -b 26.x feeds/packages/lang/golang
         #cp -rf /tmp/immortalwrt_pkg/lang/golang feeds/packages/lang/golang
         #rm -rf /tmp/immortalwrt_pkg
 

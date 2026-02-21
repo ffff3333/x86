@@ -77,9 +77,9 @@ jobs:
         ./scripts/feeds install -a
 
         #替换golang
-        rm -rf feeds/packages/lang/golang
+        #rm -rf feeds/packages/lang/golang
         #git clone https://github.com/immortalwrt/packages.git /tmp/immortalwrt_pkg
-        git clone https://github.com/sbwml/packages_lang_golang -b 26.x feeds/packages/lang/golang
+        #git clone https://github.com/sbwml/packages_lang_golang -b 26.x feeds/packages/lang/golang
         #cp -rf /tmp/immortalwrt_pkg/lang/golang feeds/packages/lang/golang
         #rm -rf /tmp/immortalwrt_pkg
 

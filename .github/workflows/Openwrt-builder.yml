@@ -88,8 +88,7 @@ jobs:
         # 安装指定版本（例如 18），sudo 执行
         sudo ./llvm.sh 18
         # 将 llvm-config 等工具链接到系统路径（可选）
-        echo "LLVM_PATH=$(llvm-config-18 --prefix)" >> $GITHUB_ENV
-
+       
     - name: Setup Go
       uses: [actions/setup-go@v5](
         

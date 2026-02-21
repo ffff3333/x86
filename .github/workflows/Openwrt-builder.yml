@@ -65,6 +65,20 @@ jobs:
         chmod +x $DIY_P1_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
+
+    - name: Free Disk Space (Ubuntu)
+      uses: jlumbroso/free-disk-space@main
+      with:
+        # this might remove tools that are actually needed,
+        # if set to "true" but frees about 6 GB
+        tool-cache: true
+        # all of these default to true, but feel free to set to
+        # "false" if necessary for your workflow
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        swap-storage: true
         
     - name: Update feeds
       run: |
@@ -77,9 +91,9 @@ jobs:
         ./scripts/feeds install -a
 
         #替换golang
-        #rm -rf feeds/packages/lang/golang
+        rm -rf feeds/packages/lang/golang
         #git clone https://github.com/immortalwrt/packages.git /tmp/immortalwrt_pkg
-        #git clone https://github.com/sbwml/packages_lang_golang -b 26.x feeds/packages/lang/golang
+        git clone https://github.com/sbwml/packages_lang_golang -b 26.x feeds/packages/lang/golang
         #cp -rf /tmp/immortalwrt_pkg/lang/golang feeds/packages/lang/golang
         #rm -rf /tmp/immortalwrt_pkg
 

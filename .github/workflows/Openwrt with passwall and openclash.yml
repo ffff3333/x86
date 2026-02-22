@@ -1,7 +1,7 @@
 
 # Openwrt with passwall and openclash
 
-name: Openwrt Builder
+name: Openwrt with passwall and openclash Builder
 
 on:
   repository_dispatch:

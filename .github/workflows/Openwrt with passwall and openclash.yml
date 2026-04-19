@@ -1,10 +1,10 @@
-name: OpenWrt 25.12 x86_64 - Passwall2 + OpenClash (Modern Builder)
+name: OpenWrt 25.12 x86_64 - Passwall2 + OpenClash + banip + adblock-fast + SQM
 
 on:
   repository_dispatch:
   workflow_dispatch:
   # schedule:
-  #   - cron: '0 10 * * 5'
+  #   - cron: '0 10 * * 5'   # 每周五上午10点（可选）
 
 env:
   REPO_URL: https://github.com/openwrt/openwrt
@@ -14,18 +14,25 @@ env:
   UPLOAD_RELEASE: true
 
 jobs:
-  prepare:
+  build:
     runs-on: ubuntu-24.04
-    outputs:
-      cache-hit: ${{ steps.ccache.outputs.cache-hit }}
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Initialization environment
+      - name: Initialize environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: |
           sudo -E apt-get -qq update
-          sudo -E apt-get -qq install ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk gettext gcc-multilib g++-multilib git gnutls-dev gperf haveged help2man intltool lib32gcc-s1 libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses-dev libpython3-dev libreadline-dev libssl-dev libtool libyaml-dev libz-dev lld llvm lrzsz mkisofs msmtp ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip python3-ply python3-docutils python3-pyelftools qemu-utils re2c rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd
+          sudo -E apt-get -qq install ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+              bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk gettext gcc-multilib \
+              g++-multilib git gnutls-dev gperf haveged help2man intltool lib32gcc-s1 libc6-dev-i386 libelf-dev \
+              libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses-dev libpython3-dev \
+              libreadline-dev libssl-dev libtool libyaml-dev libz-dev lld llvm lrzsz mkisofs msmtp ninja-build \
+              p7zip p7zip-full patch pkgconf python3 python3-pip python3-ply python3-docutils \
+              python3-pyelftools qemu-utils re2c rsync scons squashfs-tools subversion swig texinfo uglifyjs \
+              upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd
           sudo -E apt-get -qq autoremove --purge && sudo -E apt-get -qq clean
           sudo timedatectl set-timezone "${TZ}"
           sudo mkdir -p /workdir
@@ -51,24 +58,15 @@ jobs:
           max-size: 8G
           create-symlink: true
 
-  build:
-    needs: prepare
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Restore source & caches
-        run: |
-          ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
-          # ccache 已由上一 job 处理
-
-      - name: Load custom feeds
+      - name: Load custom feeds (diy-part1.sh)
         run: |
           [ -f diy-part1.sh ] && chmod +x diy-part1.sh && cd openwrt && $GITHUB_WORKSPACE/diy-part1.sh || true
 
       - name: Update feeds
-        run: cd openwrt && ./scripts/feeds update -a && ./scripts/feeds install -a
+        run: |
+          cd openwrt
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
 
       - name: Apply build profile
         run: |
@@ -84,32 +82,30 @@ jobs:
       - name: Compile firmware
         run: |
           cd openwrt
-          echo "Compiling with $(nproc) threads + ccache..."
-          make -j$(nproc) || make -j1 V=s
-          echo "status=success" >> $GITHUB_OUTPUT
-
+          echo "Starting compile with $(nproc) threads + ccache..."
+          make -j$(nproc) || make -j1 V=s || make -j1 V=s
+          
+          # 提取信息
           grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME || echo "generic" > DEVICE_NAME
           echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
           echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
 
-      - name: Organize firmware
+      - name: Organize firmware files
         if: env.UPLOAD_FIRMWARE == 'true'
         run: |
           cd openwrt/bin/targets/x86/64
           rm -rf packages
-          ls -lh *.img *.squashfs *.gz 2>/dev/null || true
           echo "FIRMWARE=$PWD" >> $GITHUB_ENV
 
-      - name: Generate firmware manifest
+      - name: Generate manifest
         if: env.UPLOAD_FIRMWARE == 'true'
         run: |
           cd ${{ env.FIRMWARE }}
           cat > manifest.txt << EOF
-          OpenWrt 25.12 x86_64 (Passwall2 + OpenClash)
+          OpenWrt 25.12 x86_64 (Passwall2 + OpenClash + banip + adblock-fast + SQM)
           Built: $(date)
           Branch: ${{ env.REPO_BRANCH }}
           SHA: ${{ github.sha }}
-          Size: $(du -sh . | cut -f1)
           EOF
           md5sum *.img *.squashfs *.gz 2>/dev/null >> manifest.txt || true
 
@@ -120,7 +116,7 @@ jobs:
           name: OpenWrt_25.12_x86_64${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
           path: ${{ env.FIRMWARE }}
 
-      - name: Upload to Release
+      - name: Upload to GitHub Release
         if: env.UPLOAD_RELEASE == 'true'
         uses: softprops/action-gh-release@master
         with:

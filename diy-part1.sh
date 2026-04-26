@@ -1,7 +1,16 @@
 #!/bin/bash
-cat >> feeds.conf.default << EOF
-src-git passwall2 https://github.com/Openwrt-Passwall/openwrt-passwall2.git;main
-src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git;main
-src-git openclash https://github.com/vernesong/OpenClash.git;master
-src-git argon https://github.com/flrz/openwrt-packages.git;master
-EOF
+#
+# https://github.com/P3TERX/Actions-OpenWrt
+# File name: diy-part1.sh
+# Description: OpenWrt DIY script part 1 (Before Update feeds)
+#
+# Copyright (c) 2019-2024 P3TERX <https://p3terx.com>
+#
+# This is free software, licensed under the MIT License.
+# See /LICENSE for more information.
+#
+
+# Uncomment a feed source       
+# Add a feed source
+sed -i '1i src-git flrz https://github.com/flrz/openwrt-packages' feeds.conf.default
+sed -i '2i src-git openclash https://github.com/vernesong/OpenClash' feeds.conf.default

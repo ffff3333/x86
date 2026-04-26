@@ -82,34 +82,39 @@ jobs:
         cd openwrt
         ./scripts/feeds install -a 
 
-    - name: Apply 25.12 Compatibility Patches (golang/rust)
+    - name: Apply 25.12 Patches
       run: |
         cd openwrt
         echo "Applying OpenWrt 25.12 compatibility patches..."
-
-        # Update golang and rust from master (common practice for release branches)
-        rm -rf temp_packages 2>/dev/null || true
-        git clone --depth=1 -b master --single-branch https://github.com/openwrt/packages.git temp_packages
-
-        for lang in golang rust; do
-          if [ -d "temp_packages/lang/$lang" ]; then
-            rm -rf feeds/packages/lang/$lang
-            cp -r temp_packages/lang/$lang feeds/packages/lang/
-            echo "✓ Updated $lang from master"
-          fi
-        done
-        rm -rf temp_packages
-
-        # Rust build fixes (common for newer toolchains)
+        
+        # Update golang and rust from master branch
+        rm -rf temp_resp 2>/dev/null || true
+        git clone --depth=1 -b master --single-branch https://github.com/openwrt/packages.git temp_resp 2>/dev/null || true
+        
+        if [ -d "temp_resp/lang/golang" ]; then
+          rm -rf feeds/packages/lang/golang
+          cp -r temp_resp/lang/golang feeds/packages/lang
+          echo "✓ Updated golang"
+        fi
+        
+        if [ -d "temp_resp/lang/rust" ]; then
+          rm -rf feeds/packages/lang/rust
+          cp -r temp_resp/lang/rust feeds/packages/lang
+          echo "✓ Updated rust"
+        fi
+        
+        rm -rf temp_resp
+        
+        # Patch rust build issues
         if [ -f "feeds/packages/lang/rust/Makefile" ]; then
-          sed -i 's/--set=llvm\.download-ci-llvm=true/--set=llvm.download-ci-llvm=false/' feeds/packages/lang/rust/Makefile || true
-          sed -i '/x\.py \\/a \ \ --ci false \\' feeds/packages/lang/rust/Makefile || true
+          sed -i 's/--set=llvm\.download-ci-llvm=true/--set=llvm.download-ci-llvm=false/' feeds/packages/lang/rust/Makefile
+          grep -q -- '--ci false \\' feeds/packages/lang/rust/Makefile || sed -i '/x\.py \\/a \        --ci false \\' feeds/packages/lang/rust/Makefile
           echo "✓ Patched rust build flags"
         fi
-
-          ./scripts/feeds update -a 2>&1 | tail -5
-          ./scripts/feeds install -a 2>&1 | tail -5
-          echo "✓ Patches applied"
+        
+        ./scripts/feeds update -a 2>&1 | tail -5
+        ./scripts/feeds install -a 2>&1 | tail -5
+        echo "✓ Patches applied"
           
     - name: Load custom configuration
       run: |

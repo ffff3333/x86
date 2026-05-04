@@ -1,0 +1,239 @@
+# ==========================================================
+# 基础配置
+# ==========================================================
+mixed-port: 7890
+allow-lan: true
+log-level: info
+ipv6: false
+external-controller: 127.0.0.1:9090
+
+# ==========================================================
+# DNS（修正版，减少泄露）
+# ==========================================================
+dns:
+  enable: true
+  ipv6: false
+  enhanced-mode: fake-ip
+  listen: 0.0.0.0:1053
+  fake-ip-range: 198.18.0.1/16
+
+  fake-ip-filter:
+    - '*.lan'
+    - '*.local'
+    - 'localhost'
+    - 'msftconnecttest.com'
+    - 'msftncsi.com'
+
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+
+  nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+
+  fallback:
+    - https://1.1.1.1/dns-query
+    - https://dns.google/dns-query
+
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    ipcidr:
+      - 240.0.0.0/4
+
+# ==========================================================
+# 节点供应商
+# ==========================================================
+proxy-providers:
+  MySub:
+    type: http
+    url: "https://flourish.ccwu.cc/sub?token=43cbf78b4cebe3ee588c5c0300c98dca"
+    interval: 3600
+    path: ./proxies.yaml
+    health-check:
+      enable: true
+      interval: 600
+      url: http://www.gstatic.com/generate_204
+
+# ==========================================================
+# 策略组
+# ==========================================================
+proxy-groups:
+  - name: 🚀 节点选择
+    type: select
+    use:
+      - MySub
+    proxies:
+      - ♻️ 自动选择
+      - 🎯 全球直连
+
+  - name: ♻️ 自动选择
+    type: url-test
+    use:
+      - MySub
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+
+  - name: 🌍 国外媒体
+    type: select
+    use:
+      - MySub
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🎯 全球直连
+
+  - name: 📲 电报信息
+    type: select
+    use:
+      - MySub
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🎯 全球直连
+
+  - name: Ⓜ️ 微软服务
+    type: select
+    proxies:
+      - 🎯 全球直连
+      - 🚀 节点选择
+
+  - name: 🍎 苹果服务
+    type: select
+    proxies:
+      - 🎯 全球直连
+      - 🚀 节点选择
+
+  - name: 🛑 全球拦截
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
+
+  - name: 🍃 应用净化
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
+
+  - name: 🎯 全球直连
+    type: select
+    proxies:
+      - DIRECT
+
+  - name: 🐟 漏网之鱼
+    type: select
+    use:
+      - MySub
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🎯 全球直连
+
+# ==========================================================
+# 规则提供器
+# ==========================================================
+rule-providers:
+  LocalAreaNetwork:
+    type: http
+    behavior: classical
+    url: https://wcc.best
+    path: ./providers/lan.yaml
+    interval: 86400
+
+  BanAD:
+    type: http
+    behavior: classical
+    url: https://wcc.best
+    path: ./providers/ad.yaml
+    interval: 86400
+
+  BanProgramAD:
+    type: http
+    behavior: classical
+    url: https://wcc.best
+    path: ./providers/pad.yaml
+    interval: 86400
+
+  GoogleCN:
+    type: http
+    behavior: classical
+    url: https://wcc.best
+    path: ./providers/gcn.yaml
+    interval: 86400
+
+  SteamCN:
+    type: http
+    behavior: classical
+    url: https://wcc.best
+    path: ./providers/scn.yaml
+    interval: 86400
+
+  Microsoft:
+    type: http
+    behavior: classical
+    url: https://wcc.best
+    path: ./providers/ms.yaml
+    interval: 86400
+
+  Apple:
+    type: http
+    behavior: classical
+    url: https://wcc.best
+    path: ./providers/apple.yaml
+    interval: 86400
+
+  ProxyMedia:
+    type: http
+    behavior: classical
+    url: https://wcc.best
+    path: ./providers/media.yaml
+    interval: 86400
+
+  Telegram:
+    type: http
+    behavior: classical
+    url: https://wcc.best
+    path: ./providers/tg.yaml
+    interval: 86400
+
+  ProxyLite:
+    type: http
+    behavior: classical
+    url: https://wcc.best
+    path: ./providers/proxy.yaml
+    interval: 86400
+
+  ChinaDomain:
+    type: http
+    behavior: classical
+    url: https://wcc.best
+    path: ./providers/cdn.yaml
+    interval: 86400
+
+  ChinaCompanyIp:
+    type: http
+    behavior: classical
+    url: https://wcc.best
+    path: ./providers/cip.yaml
+    interval: 86400
+
+# ==========================================================
+# 规则
+# ==========================================================
+rules:
+  - RULE-SET,LocalAreaNetwork,🎯 全球直连
+  - RULE-SET,BanAD,🛑 全球拦截
+  - RULE-SET,BanProgramAD,🍃 应用净化
+  - RULE-SET,GoogleCN,🎯 全球直连
+  - RULE-SET,SteamCN,🎯 全球直连
+  - RULE-SET,Microsoft,Ⓜ️ 微软服务
+  - RULE-SET,Apple,🍎 苹果服务
+  - RULE-SET,ProxyMedia,🌍 国外媒体
+  - RULE-SET,Telegram,📲 电报信息
+  - RULE-SET,ProxyLite,🚀 节点选择
+  - RULE-SET,ChinaDomain,🎯 全球直连
+  - RULE-SET,ChinaCompanyIp,🎯 全球直连
+  - GEOIP,CN,🎯 全球直连
+  - MATCH,🐟 漏网之鱼

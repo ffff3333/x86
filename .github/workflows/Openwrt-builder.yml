@@ -130,25 +130,25 @@ jobs:
          echo "✓ Updated golang"
        fi
     
-      # 更新 rust
-      if [ -d "$temp_dir/lang/rust" ]; then
-        rm -rf feeds/packages/lang/rust
-        cp -r "$temp_dir/lang/rust" feeds/packages/lang/
+       # 更新 rust
+       if [ -d "$temp_dir/lang/rust" ]; then
+         rm -rf feeds/packages/lang/rust
+         cp -r "$temp_dir/lang/rust" feeds/packages/lang/
       
-      # 修复 rust 构建问题
-      # ⭐ 移除 'local'，改为普通变量
-      rust_makefile="feeds/packages/lang/rust/Makefile"
-      if [ -f "$rust_makefile" ]; then
-        sed -i 's/--set=llvm\.download-ci-llvm=true/--set=llvm.download-ci-llvm=false/' "$rust_makefile"
-        grep -q -- '--ci false' "$rust_makefile" || \
-          sed -i '/x\.py/a\        --ci false \\' "$rust_makefile"
-        echo "✓ Patched rust build flags"
-      fi
-    fi
+       # 修复 rust 构建问题
+       # ⭐ 移除 'local'，改为普通变量
+       rust_makefile="feeds/packages/lang/rust/Makefile"
+       if [ -f "$rust_makefile" ]; then
+         sed -i 's/--set=llvm\.download-ci-llvm=true/--set=llvm.download-ci-llvm=false/' "$rust_makefile"
+         grep -q -- '--ci false' "$rust_makefile" || \
+           sed -i '/x\.py/a\        --ci false \\' "$rust_makefile"
+         echo "✓ Patched rust build flags"
+       fi
+     fi
     
-    ./scripts/feeds update -a 2>&1 | tail -10
-    ./scripts/feeds install -a 2>&1 | tail -10
-    echo "✓ Patches applied successfully"
+     ./scripts/feeds update -a 2>&1 | tail -10
+     ./scripts/feeds install -a 2>&1 | tail -10
+     echo "✓ Patches applied successfully"
 
     - name: Configure firmware
       run: |

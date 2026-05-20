@@ -109,31 +109,31 @@ jobs:
         ./scripts/feeds install -a
 
     - name: Apply 25.12 patches
-    run: |
-      cd openwrt
-      echo "Applying OpenWrt 25.12 compatibility patches..."
+      run: |
+        cd openwrt
+        echo "Applying OpenWrt 25.12 compatibility patches..."
     
-      # 克隆临时仓库获取最新的 golang 和 rust
-      temp_dir=$(mktemp -d)
-      trap "rm -rf $temp_dir" EXIT
+        # 克隆临时仓库获取最新的 golang 和 rust
+        temp_dir=$(mktemp -d)
+        trap "rm -rf $temp_dir" EXIT
     
-      git clone --depth=1 -b master --single-branch \
-        https://github.com/openwrt/packages.git "$temp_dir" 2>/dev/null || {
-        echo "⚠ Failed to clone packages repo, continuing with existing versions"
-        exit 0
-      }
+        git clone --depth=1 -b master --single-branch \
+          https://github.com/openwrt/packages.git "$temp_dir" 2>/dev/null || {
+          echo "⚠ Failed to clone packages repo, continuing with existing versions"
+          exit 0
+        }
     
-      # 更新 golang
-      if [ -d "$temp_dir/lang/golang" ]; then
-        rm -rf feeds/packages/lang/golang
-        cp -r "$temp_dir/lang/golang" feeds/packages/lang/
-        echo "✓ Updated golang"
-      fi
+       # 更新 golang
+       if [ -d "$temp_dir/lang/golang" ]; then
+         rm -rf feeds/packages/lang/golang
+         cp -r "$temp_dir/lang/golang" feeds/packages/lang/
+         echo "✓ Updated golang"
+       fi
     
-     # 更新 rust
-     if [ -d "$temp_dir/lang/rust" ]; then
-       rm -rf feeds/packages/lang/rust
-       cp -r "$temp_dir/lang/rust" feeds/packages/lang/
+      # 更新 rust
+      if [ -d "$temp_dir/lang/rust" ]; then
+        rm -rf feeds/packages/lang/rust
+        cp -r "$temp_dir/lang/rust" feeds/packages/lang/
       
       # 修复 rust 构建问题
       # ⭐ 移除 'local'，改为普通变量

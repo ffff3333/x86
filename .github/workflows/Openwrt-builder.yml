@@ -35,7 +35,6 @@ jobs:
         echo "Before cleanup:"
         df -hT /
         
-        # 合并清理操作
         sudo -E rm -rf \
           /usr/share/dotnet \
           /etc/mysql \
@@ -46,7 +45,6 @@ jobs:
           /opt/hostedtoolcache/CodeQL
         
         sudo docker image prune --all --force
-        sudo docker builder prune --all --force
         
         echo "After cleanup:"
         df -hT /
@@ -57,7 +55,7 @@ jobs:
       run: |
         sudo -E apt-get -qq update
         
-        # 分组安装依赖，便于维护
+        # 分组安装依赖
         sudo -E apt-get -qq install --no-install-recommends \
           build-essential clang cmake ninja-build \
           curl git pkg-config zstd
@@ -71,7 +69,7 @@ jobs:
         sudo -E apt-get -qq install --no-install-recommends \
           ack antlr3 asciidoc autoconf automake autopoint \
           bzip2 ccache cpio device-tree-compiler ecj fastjar \
-          gnutls-dev gperf haveged help2man intltool lrzsz \
+          gnutls-dev gperf help2man intltool lrzsz \
           mkisofs msmtp nano p7zip p7zip-full patch perl \
           python3-docutils python3-pyelftools qemu-utils re2c \
           rsync scons squashfs-tools subversion swig texinfo \
@@ -112,45 +110,44 @@ jobs:
       run: |
         cd openwrt
         echo "Applying OpenWrt 25.12 compatibility patches..."
-    
+        
         # 克隆临时仓库获取最新的 golang 和 rust
         temp_dir=$(mktemp -d)
         trap "rm -rf $temp_dir" EXIT
-    
-        git clone --depth=1 -b master --single-branch \
-          https://github.com/openwrt/packages.git "$temp_dir" 2>/dev/null || {
+        
+        if git clone --depth=1 -b master --single-branch \
+          https://github.com/openwrt/packages.git "$temp_dir" 2>/dev/null; then
+          
+          # 更新 golang
+          if [ -d "$temp_dir/lang/golang" ]; then
+            rm -rf feeds/packages/lang/golang
+            cp -r "$temp_dir/lang/golang" feeds/packages/lang/
+            echo "✓ Updated golang"
+          fi
+          
+          # 更新 rust
+          if [ -d "$temp_dir/lang/rust" ]; then
+            rm -rf feeds/packages/lang/rust
+            cp -r "$temp_dir/lang/rust" feeds/packages/lang/
+            
+            # 修复 rust 构建问题（✅ 移除 local，改为普通变量）
+            rust_makefile="feeds/packages/lang/rust/Makefile"
+            if [ -f "$rust_makefile" ]; then
+              sed -i 's/--set=llvm\.download-ci-llvm=true/--set=llvm.download-ci-llvm=false/' "$rust_makefile"
+              grep -q -- '--ci false' "$rust_makefile" || \
+                sed -i '/x\.py/a\        --ci false \\' "$rust_makefile"
+              echo "✓ Patched rust build flags"
+            fi
+          fi
+          
+          ./scripts/feeds update -a 2>&1 | tail -5
+          ./scripts/feeds install -a 2>&1 | tail -5
+          echo "✓ Patches applied successfully"
+        else
           echo "⚠ Failed to clone packages repo, continuing with existing versions"
-          exit 0
-        }
-    
-       # 更新 golang
-       if [ -d "$temp_dir/lang/golang" ]; then
-         rm -rf feeds/packages/lang/golang
-         cp -r "$temp_dir/lang/golang" feeds/packages/lang/
-         echo "✓ Updated golang"
-       fi
-    
-       # 更新 rust
-       if [ -d "$temp_dir/lang/rust" ]; then
-         rm -rf feeds/packages/lang/rust
-         cp -r "$temp_dir/lang/rust" feeds/packages/lang/
-      
-       # 修复 rust 构建问题
-       # ⭐ 移除 'local'，改为普通变量
-       rust_makefile="feeds/packages/lang/rust/Makefile"
-       if [ -f "$rust_makefile" ]; then
-         sed -i 's/--set=llvm\.download-ci-llvm=true/--set=llvm.download-ci-llvm=false/' "$rust_makefile"
-         grep -q -- '--ci false' "$rust_makefile" || \
-           sed -i '/x\.py/a\        --ci false \\' "$rust_makefile"
-         echo "✓ Patched rust build flags"
-       fi
-     fi
-    
-     ./scripts/feeds update -a 2>&1 | tail -10
-     ./scripts/feeds install -a 2>&1 | tail -10
-     echo "✓ Patches applied successfully"
+        fi
 
-    - name: Configure firmware
+    - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
@@ -164,7 +161,7 @@ jobs:
         cd openwrt
         make defconfig
         echo "Downloading packages..."
-        make download -j8 2>&1 | tail -20
+        make download -j8 2>&1 | tail -10
         
         # 清理损坏的包
         find dl -size -1024c -delete -print
@@ -183,7 +180,7 @@ jobs:
         if make -j$(nproc) 2>&1 | tee build.log; then
           echo "✓ Compilation succeeded on first attempt"
         else
-          echo "⚠ First attempt failed, retrying with single thread for diagnostics..."
+          echo "⚠ First attempt failed, retrying with single thread..."
           make -j1 V=s 2>&1 | tee -a build.log
         fi
         
@@ -203,7 +200,6 @@ jobs:
       run: |
         echo "Final disk usage:"
         df -hT /
-        echo "Build directory size:"
         du -sh openwrt/bin/ 2>/dev/null || echo "N/A"
 
     - name: Upload build artifacts
@@ -244,21 +240,11 @@ jobs:
           echo "Build Date: $(date -R)"
           echo "Branch: ${{ env.REPO_BRANCH }}"
           echo ""
-          echo "Build Log Summary:"
-          tail -20 openwrt/build.log || echo "See artifacts for details"
+          echo "## Build Summary"
+          tail -20 openwrt/build.log 2>/dev/null || echo "See artifacts for details"
         } > release.txt
         
         echo "status=success" >> $GITHUB_OUTPUT
-
-    # - name: Upload to GitHub Release
-    #   uses: softprops/action-gh-release@v2
-    #   if: steps.tag.outputs.status == 'success'
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     tag_name: ${{ steps.tag.outputs.release_tag }}
-    #     body_path: release.txt
-    #     files: ${{ env.FIRMWARE }}/*
 
     - name: Cleanup old workflow runs
       uses: Mattraks/delete-workflow-runs@v2

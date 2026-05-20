@@ -109,44 +109,46 @@ jobs:
         ./scripts/feeds install -a
 
     - name: Apply 25.12 patches
-      run: |
-        cd openwrt
-        echo "Applying OpenWrt 25.12 compatibility patches..."
-        
-        # 克隆临时仓库获取最新的 golang 和 rust
-        temp_dir=$(mktemp -d)
-        trap "rm -rf $temp_dir" EXIT
-        
-        git clone --depth=1 -b master --single-branch \
-          https://github.com/openwrt/packages.git "$temp_dir" 2>/dev/null || {
-          echo "⚠ Failed to clone packages repo, continuing with existing versions"
-          exit 0
-        }
-        
-        # 更新 golang
-        if [ -d "$temp_dir/lang/golang" ]; then
-          rm -rf feeds/packages/lang/golang
-          cp -r "$temp_dir/lang/golang" feeds/packages/lang/
-          echo "✓ Updated golang"
-        fi
-        
-        # 更新 rust
-        if [ -d "$temp_dir/lang/rust" ]; then
-          rm -rf feeds/packages/lang/rust
-          cp -r "$temp_dir/lang/rust" feeds/packages/lang/
-          
-          # 修复 rust 构建问题
-          local rust_makefile="feeds/packages/lang/rust/Makefile"
-          if [ -f "$rust_makefile" ]; then
-            sed -i 's/--set=llvm\.download-ci-llvm=true/--set=llvm.download-ci-llvm=false/' "$rust_makefile"
-            grep -q -- '--ci false' "$rust_makefile" || \
-              sed -i '/x\.py/a\        --ci false \\' "$rust_makefile"
-            echo "✓ Patched rust build flags"
-          fi
-        fi
-        
-        ./scripts/feeds update -a 2>&1 | tail -10
-        ./scripts/feeds install -a 2>&1 | tail -10
+    run: |
+      cd openwrt
+      echo "Applying OpenWrt 25.12 compatibility patches..."
+    
+      # 克隆临时仓库获取最新的 golang 和 rust
+      temp_dir=$(mktemp -d)
+      trap "rm -rf $temp_dir" EXIT
+    
+      git clone --depth=1 -b master --single-branch \
+        https://github.com/openwrt/packages.git "$temp_dir" 2>/dev/null || {
+        echo "⚠ Failed to clone packages repo, continuing with existing versions"
+        exit 0
+      }
+    
+      # 更新 golang
+      if [ -d "$temp_dir/lang/golang" ]; then
+        rm -rf feeds/packages/lang/golang
+        cp -r "$temp_dir/lang/golang" feeds/packages/lang/
+        echo "✓ Updated golang"
+      fi
+    
+     # 更新 rust
+     if [ -d "$temp_dir/lang/rust" ]; then
+       rm -rf feeds/packages/lang/rust
+       cp -r "$temp_dir/lang/rust" feeds/packages/lang/
+      
+      # 修复 rust 构建问题
+      # ⭐ 移除 'local'，改为普通变量
+      rust_makefile="feeds/packages/lang/rust/Makefile"
+      if [ -f "$rust_makefile" ]; then
+        sed -i 's/--set=llvm\.download-ci-llvm=true/--set=llvm.download-ci-llvm=false/' "$rust_makefile"
+        grep -q -- '--ci false' "$rust_makefile" || \
+          sed -i '/x\.py/a\        --ci false \\' "$rust_makefile"
+        echo "✓ Patched rust build flags"
+      fi
+    fi
+    
+    ./scripts/feeds update -a 2>&1 | tail -10
+    ./scripts/feeds install -a 2>&1 | tail -10
+    echo "✓ Patches applied successfully"
 
     - name: Configure firmware
       run: |

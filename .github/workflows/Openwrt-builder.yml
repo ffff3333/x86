@@ -89,6 +89,7 @@ jobs:
         # 不指定分支，直接拉默认分支（目前是 27.x，以后出 28.x 也会自动跟上）
         git clone --depth 1 https://github.com/sbwml/packages_lang_golang feeds/packages/lang/golang
         ./scripts/feeds install -a
+        rm -rf build_dir/hostpkg/golang* staging_dir/hostpkg/lib/go-* 2>/dev/null || true
         
         # 移除 openwrt feeds 自带的核心库
         rm -rf feeds/packages/net/{xray-core,v2ray-geodata,sing-box,chinadns-ng,dns2socks,hysteria,ipt2socks,microsocks,naiveproxy,shadowsocks-rust,shadowsocksr-libev,simple-obfs,tcping,v2ray-plugin,xray-plugin,geoview,shadow-tls}
